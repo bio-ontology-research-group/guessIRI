@@ -30,6 +30,7 @@ import org.semanticweb.owlapi.util.*;
 import org.semanticweb.owlapi.search.*;
 import org.semanticweb.owlapi.manchestersyntax.renderer.*;
 import org.semanticweb.owlapi.reasoner.structural.*
+import groovy.json.JsonBuilder
 
 OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
 config.setFollowRedirects(false);
@@ -48,7 +49,14 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
 
       def currentLSB
       def iris = []
-      ontology.getClassesInSignature(false).each { oClass ->
+      def classes = ontology.getClassesInSignature(false)
+
+      def classList = new ArrayList<>(classes)
+      if(classList.size() > 1000) {
+        classList = classList.subList(0, 1000)
+      }
+      
+      classList.each { oClass ->
         def iri = oClass.getIRI().toString()
 
         iris.each {
@@ -63,7 +71,7 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
 
       new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
     } catch(e) {
-      println e.getMessage()
+      println "[FINDIRI] Unable to process " + name + ". Cause: " + e.getMessage()
     }
   }
 }

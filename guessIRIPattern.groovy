@@ -35,10 +35,12 @@ OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
 config.setFollowRedirects(false);
 config.setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
 
+def uriSchemes = [:]
+
 new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groovy') { resp, ontologies ->
   ontologies = ontologies.findAll { name, status -> status.status == 'classified' }
   ontologies.each { name, status ->
-    println "[FINDIRI]"
+    println "[FINDIRI] Processing " + name
 
     try {
       def manager = OWLManager.createOWLOntologyManager();
@@ -56,7 +58,10 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
         iris << iri
       }
 
-      println currentLSB
+      uriSchemes[name] = currentLSB
+      println "[FINDIRI] Most likely IRI scheme: " + currentLSB
+
+      new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
     } catch(e) {
       println e.getMessage()
     }

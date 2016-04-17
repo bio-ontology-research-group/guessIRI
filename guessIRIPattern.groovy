@@ -49,7 +49,7 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
           def ontology = new File('/home/aberowl/aberowl-meta/aberowl-server/onts/'+path).text
           def match = ontology =~ "xmlns=\"(.+)\""
 
-          if(match && match[0][1]) {
+          if(match && match[0][1] && match[0][1] != "http://www.w3.org/2002/07/owl#") {
             uriSchemes[name] = match[0][1]
             println "[FINDIRI] Most likely IRI scheme from RDF: " + match[0][1]
 

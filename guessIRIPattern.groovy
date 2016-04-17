@@ -43,36 +43,51 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
   ontologies.each { name, status ->
     println "[FINDIRI] Processing " + name
 
+    // First we'll try to regex the XML
     try {
-      def manager = OWLManager.createOWLOntologyManager();
-      def ontology = manager.loadOntologyFromOntologyDocument(new IRIDocumentSource(IRI.create("http://localhost/rtestserv/ontology/"+name+"/download")), config);
+      new HTTPBuilder('http://localhost/').get(path: 'rtestserv/ontology/'+name+'/path') { res, path ->
+          def ontology = new File('/home/aberowl/aberowl-meta/aberowl-server/onts/'+path).text
+          def match = ontology =~ "xmlns=\"(.+)\""
 
-      def currentLSB
-      def iris = []
-      def classes = ontology.getClassesInSignature(false)
+          if(match && match[0][1]) {
+            uriSchemes[name] = match[0][1]
+            println "[FINDIRI] Most likely IRI scheme from RDF: " + match[0][1]
 
-      def classList = new ArrayList<>(classes)
-      if(classList.size() > 1000) {
-        classList = classList.subList(0, 1000)
-      }
-      
-      classList.each { oClass ->
-        def iri = oClass.getIRI().toString()
+            new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
+          } else {
+            try {
+              def manager = OWLManager.createOWLOntologyManager();
+              ontology = manager.loadOntologyFromOntologyDocument(new IRIDocumentSource(IRI.create("http://localhost/rtestserv/ontology/"+name+"/download")), config);
 
-        iris.each {
-          currentLSB = longestCommonSubstring(iri, it)
+              def currentLSB
+              def iris = []
+              def classes = ontology.getClassesInSignature(false)
+
+              def classList = new ArrayList<>(classes)
+              if(classList.size() > 1000) {
+                classList = classList.subList(0, 1000)
+              }
+              
+              classList.each { oClass ->
+                def iri = oClass.getIRI().toString()
+
+                iris.each {
+                  currentLSB = longestCommonSubstring(iri, it)
+                }
+
+                iris << iri
+              }
+
+              uriSchemes[name] = currentLSB
+              println "[FINDIRI] Most likely IRI scheme from LSB: " + currentLSB
+              new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
+            } catch(e) {
+              println "[FINDIRI] Unable to process " + name + ". Cause: " + e.getMessage()
+            }
+            
         }
-
-        iris << iri
       }
-
-      uriSchemes[name] = currentLSB
-      println "[FINDIRI] Most likely IRI scheme: " + currentLSB
-
-      new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
-    } catch(e) {
-      println "[FINDIRI] Unable to process " + name + ". Cause: " + e.getMessage()
-    }
+    } catch(e) { println "[FINDIRI] Unable to process " + name + ". Cause: " + e.getMessage() }
   }
 }
 
@@ -100,5 +115,4 @@ def longestCommonSubstring(String S1, String S2) {
     }
     return S1.substring(Start, (Start + Max));
 }
-
 

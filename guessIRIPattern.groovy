@@ -52,8 +52,8 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
       def classes = ontology.getClassesInSignature(false)
 
       def classList = new ArrayList<>(classes)
-      if(classList.size() > 1000) {
-        classList = classList.subList(0, 1000)
+      if(classList.size() > 5000) {
+        classList = classList.subList(0, 5000)
       }
       
       classList.each { oClass ->

@@ -51,7 +51,7 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
 
           if(match && match[0][1] && match[0][1] != "http://www.w3.org/2002/07/owl#") {
             uriSchemes[name] = match[0][1]
-            println "[FINDIRI] Most likely IRI scheme from RDF: " + match[0][1]
+            println "[FINDIRI]["+name+"] Most likely IRI scheme from RDF: " + match[0][1]
 
             new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
           } else {
@@ -79,15 +79,21 @@ new HTTPBuilder('http://aber-owl.net/').get(path: 'service/api/getStatuses.groov
               }
 
               uriSchemes[name] = currentLSB
-              println "[FINDIRI] Most likely IRI scheme from LSB: " + currentLSB
+              println "[FINDIRI]["+name+"] Most likely IRI scheme from LSB: " + currentLSB
               new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
             } catch(e) {
-              println "[FINDIRI] Unable to process " + name + ". Cause: " + e.getMessage()
+              uriSchemes[name] = 'Unloadable'
+              new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
+              println "[FINDIRI] Unable to load " + name
             }
             
         }
       }
-    } catch(e) { println "[FINDIRI] Unable to process " + name + ". Cause: " + e.getMessage() }
+    } catch(e) { 
+      uriSchemes[name] = 'Unknown'
+      new File("ontology_iri_patterns.json").write(new JsonBuilder(uriSchemes).toPrettyString())
+      println "[FINDIRI] Unable to find " + name
+    }
   }
 }
 

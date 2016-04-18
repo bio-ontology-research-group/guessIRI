@@ -25,7 +25,7 @@
     "ATOL": "file:/C:/Lea/ontologies/versions%20ATOL/atol_v3.0.obo#",
     "BAO": "http://www.bioassayontology.org/bao/bao-bfo.owl#",
     "BAO-GPCR": "http://www.bioassayontology.org/bao#",
-    "BCO": "&obo;bco.owl#",
+    "BCO": "http://purl.obolibrary.org/obo/BCO_",
     "BCTEO": "http://purl.obolibrary.org/obo/ID_",
     "BDO": "http://purl.org/skeletome/bonedysplasia#",
     "BFO": "http://purl.obolibrary.org/obo/BFO_",
